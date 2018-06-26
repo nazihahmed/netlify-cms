@@ -288,7 +288,7 @@ export default class API {
     return Promise.all(uploadPromises).then(() => {
       if (!options.mode || (options.mode && options.mode === SIMPLE)) {
         return this.getBranch()
-        .then(branchData => this.updateTree(branchData.commit.sha, "/", fileTree))
+        .then(branchData => this.updateTree(branchData.object.sha, "/", fileTree))
         .then(changeTree => this.commit(options.commitMessage, changeTree))
         .then(response => this.patchBranch(this.branch, response.sha));
 
@@ -330,7 +330,7 @@ export default class API {
       let prResponse;
 
       return this.getBranch()
-      .then(branchData => this.updateTree(branchData.commit.sha, "/", fileTree))
+      .then(branchData => this.updateTree(branchData.object.sha, "/", fileTree))
       .then(changeTree => this.commit(options.commitMessage, changeTree))
       .then(commitResponse => this.createBranch(branchName, commitResponse.sha))
       .then(branchResponse => this.createPR(options.commitMessage, branchName))
@@ -365,7 +365,7 @@ export default class API {
       // Entry is already on editorial review workflow - just update metadata and commit to existing branch
       let newHead;
       return this.getBranch(branchName)
-        .then(branchData => this.updateTree(branchData.commit.sha, "/", fileTree))
+        .then(branchData => this.updateTree(branchData.object.sha, "/", fileTree))
         .then(changeTree => this.commit(options.commitMessage, changeTree))
         .then(commit => {
           newHead = commit;
@@ -603,7 +603,7 @@ export default class API {
   }
 
   getBranch(branch = this.branch) {
-    return this.request(`${ this.repoURL }/branches/${ encodeURIComponent(branch) }`);
+    return this.request(`${ this.repoURL }/git/refs/heads/${ branch }`);
   }
 
   createBranch(branchName, sha) {
@@ -676,7 +676,7 @@ export default class API {
     });
     console.log("%c Automatic merge not possible - Forcing merge.", "line-height: 30px;text-align: center;font-weight: bold"); // eslint-disable-line
     return this.getBranch()
-    .then(branchData => this.updateTree(branchData.commit.sha, "/", fileTree))
+    .then(branchData => this.updateTree(branchData.object.sha, "/", fileTree))
     .then(changeTree => this.commit(commitMessage, changeTree))
     .then(response => this.patchBranch(this.branch, response.sha));
   }
